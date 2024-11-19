@@ -23,16 +23,10 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Content Update="Pages\custom.cshtml">
+    <Content Update="Pages\register.cshtml">
       <Pack>$(IncludeRazorContentInPack)</Pack>
     </Content>
-    <Content Update="Pages\usernameless.cshtml">
-      <Pack>$(IncludeRazorContentInPack)</Pack>
-    </Content>
-    <Content Update="Pages\passwordless.cshtml">
-      <Pack>$(IncludeRazorContentInPack)</Pack>
-    </Content>
-    <Content Update="Pages\mfa.cshtml">
+    <Content Update="Pages\login.cshtml">
       <Pack>$(IncludeRazorContentInPack)</Pack>
     </Content>
   </ItemGroup>
