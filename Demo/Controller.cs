@@ -18,6 +18,8 @@ public class MyController : Controller
     public MyController(IFido2 fido2)
     {
         _fido2 = fido2;
+        
+        
     }
 
     private string FormatException(Exception e)
