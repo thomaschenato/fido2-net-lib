@@ -240,13 +240,33 @@ public class MyController : Controller
             var users = await DemoStorage.GetUsersByCredentialIdAsync(res.CredentialId, new CancellationToken());
             var userName = users.First().Name;
 
-            res.UserName = userName;
+            string authenticatorData;
+            
+            try
+            {
+                authenticatorData = CborObject.Decode(clientResponse.Response.AuthenticatorData).ToJson();
+            }
+            catch (Exception)
+            {
+                authenticatorData = "Could not decode";
+            }
 
+            string clientDataJson;
+            
+            try
+            {
+                clientDataJson = Encoding.Default.GetString(clientResponse.Response.ClientDataJson);
+            }
+            catch (Exception)
+            {
+                clientDataJson = "Could not decode";
+            }
+            
             var response = new
             {
-                authenicatorData = CborObject.Decode(clientResponse.Response.AuthenticatorData).ToJson(),
-                userHandle = clientResponse.Response.UserHandle == null ? null : CborObject.Decode(clientResponse.Response.UserHandle).ToJson(),
-                clientDataJson = Encoding.Default.GetString(clientResponse.Response.ClientDataJson),
+                userName,
+                authenticatorData,
+                clientDataJson,
                 response = res,
             };
             

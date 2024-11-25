@@ -127,7 +127,7 @@ async function verifyAssertionWithServer(assertedCredential) {
         return;
     }
 
-    let userName = response.response.userName;
+    let userName = response.userName;
 
     let loginResult = document.querySelector('#loginResult');
     loginResult.innerHTML = JSON.stringify(response, null, "\t");
