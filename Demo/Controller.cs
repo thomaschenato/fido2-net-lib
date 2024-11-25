@@ -135,13 +135,43 @@ public class MyController : Controller
                 AttestationClientDataJson = credential.AttestationClientDataJson
             });
 
+            string attestationObject;
+            try
+            {
+                attestationObject = ((CborMap)CborObject.Decode(credential.AttestationObject)).ToJson();
+            }
+            catch (Exception e)
+            {
+                attestationObject = $"Could not decode {e.Message}";
+            }
+            
+            string publicKey;
+            try
+            {
+                publicKey = ((CborMap)CborObject.Decode(credential.PublicKey)).ToJson();
+            }
+            catch (Exception e)
+            {
+                publicKey = $"Could not decode {e.Message}";
+            }
+
+            string clientDataJson;
+            try
+            {
+                clientDataJson = Encoding.Default.GetString(credential.AttestationClientDataJson).ToJson();
+            }
+            catch (Exception e)
+            {
+                clientDataJson = $"Could not decode {e.Message}";
+            }
+            
             var response = new
             {
                 decodedCredential = new
                 {
-                    attestationObject = ((CborMap)CborObject.Decode(credential.AttestationObject)).ToJson(),
-                    publicKey = CborObject.Decode(credential.PublicKey).ToJson(),
-                    clientDataJson = Encoding.Default.GetString(credential.AttestationClientDataJson).ToJson()
+                    attestationObject,
+                    publicKey,
+                    clientDataJson
                 },
                 credential,
             };
@@ -193,7 +223,6 @@ public class MyController : Controller
             // 5. Return options to client
             return Json(options);
         }
-
         catch (Exception e)
         {
             return Json(new { Status = "error", ErrorMessage = FormatException(e) });
@@ -246,9 +275,9 @@ public class MyController : Controller
             {
                 authenticatorData = CborObject.Decode(clientResponse.Response.AuthenticatorData).ToJson();
             }
-            catch (Exception)
+            catch (Exception e)
             {
-                authenticatorData = "Could not decode";
+                authenticatorData = $"Could not decode {e.Message}";
             }
 
             string clientDataJson;
@@ -257,9 +286,9 @@ public class MyController : Controller
             {
                 clientDataJson = Encoding.Default.GetString(clientResponse.Response.ClientDataJson);
             }
-            catch (Exception)
+            catch (Exception e)
             {
-                clientDataJson = "Could not decode";
+                clientDataJson = $"Could not decode {e.Message}";
             }
             
             var response = new
