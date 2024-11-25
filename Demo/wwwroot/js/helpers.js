@@ -1,4 +1,5 @@
-﻿coerceToArrayBuffer = function (thing, name) {
+﻿
+coerceToArrayBuffer = function (thing, name) {
     if (typeof thing === "string") {
         // base64url to base64
         thing = thing.replace(/-/g, "+").replace(/_/g, "/");
@@ -106,3 +107,4 @@ function value(selector) {
     }
     return el.value;
 }
+

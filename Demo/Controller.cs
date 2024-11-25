@@ -1,10 +1,15 @@
-﻿using System.Text;
+﻿using System.Formats.Cbor;
+using System.Security.Cryptography;
+using System.Text;
 
 using Fido2NetLib;
+using Fido2NetLib.Cbor;
 using Fido2NetLib.Development;
 using Fido2NetLib.Objects;
 
 using Microsoft.AspNetCore.Mvc;
+using Newtonsoft.Json;
+using NuGet.Protocol;
 
 namespace Fido2Demo;
 
@@ -130,8 +135,19 @@ public class MyController : Controller
                 AttestationClientDataJson = credential.AttestationClientDataJson
             });
 
+            var response = new
+            {
+                decodedCredential = new
+                {
+                    attestationObject = ((CborMap)CborObject.Decode(credential.AttestationObject)).ToJson(),
+                    publicKey = CborObject.Decode(credential.PublicKey).ToJson(),
+                    clientDataJson = Encoding.Default.GetString(credential.AttestationClientDataJson).ToJson()
+                },
+                credential,
+            };
+            
             // 4. return "ok" to the client
-            return Json(credential);
+            return Json(response);
         }
         catch (Exception e)
         {
@@ -226,8 +242,16 @@ public class MyController : Controller
 
             res.UserName = userName;
 
+            var response = new
+            {
+                authenicatorData = CborObject.Decode(clientResponse.Response.AuthenticatorData).ToJson(),
+                userHandle = clientResponse.Response.UserHandle == null ? null : CborObject.Decode(clientResponse.Response.UserHandle).ToJson(),
+                clientDataJson = Encoding.Default.GetString(clientResponse.Response.ClientDataJson),
+                response = res,
+            };
+            
             // 7. return OK to client
-            return Json(res);
+            return Json(response);
         }
         catch (Exception e)
         {

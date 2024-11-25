@@ -44,6 +44,9 @@ async function handleSignInSubmit(event) {
         listItem.id = coerceToArrayBuffer(listItem.id);
     });
 
+    let makeAssertionOptionsResult = document.querySelector('#makeAssertionOptionsResult');
+    makeAssertionOptionsResult.innerHTML = JSON.stringify(makeAssertionOptions, null, "\t");
+    
     console.log("Assertion options", makeAssertionOptions);
 
     Swal.fire({
@@ -63,6 +66,9 @@ async function handleSignInSubmit(event) {
     } catch (err) {
         showErrorAlert(err.message ? err.message : err);
     }
+
+    let authenticatorResult = document.querySelector('#authenticatorResult');
+    authenticatorResult.innerHTML = JSON.stringify(credential, null, "\t");
 
     try {
         await verifyAssertionWithServer(credential);
@@ -121,7 +127,10 @@ async function verifyAssertionWithServer(assertedCredential) {
         return;
     }
 
-    let userName = response.userName;
+    let userName = response.response.userName;
+
+    let loginResult = document.querySelector('#loginResult');
+    loginResult.innerHTML = JSON.stringify(response, null, "\t");
 
     // show success message
     await Swal.fire({
@@ -132,5 +141,5 @@ async function verifyAssertionWithServer(assertedCredential) {
     });
 
     // redirect to dashboard to show keys
-    window.location.href = "/dashboard/" + userName;
+    //window.location.href = "/dashboard/" + userName;
 }
