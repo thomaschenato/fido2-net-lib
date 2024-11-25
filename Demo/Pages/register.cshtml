@@ -7,14 +7,14 @@
 <div class="section">
     <div class="container">
         <div class="columns">
-            <div class="column is-3">
+            <div class="column">
 
                 <h3 class="title">Register user</h3>
                 <form action="/mfa" method="post" id="register">
                     <div class="field">
                         <label class="label">Username</label>
                         <div class="control has-icons-left has-icons-right">
-                            <input class="input" type="text" placeholder="Enter usename" name="username" required>
+                            <input class="input" style="width: 300px" type="text" placeholder="Enter usename" name="username" required>
                             <span class="icon is-small is-left">
                                 <i class="fas fa-user"></i>
                             </span>
@@ -24,7 +24,7 @@
                     <div class="field">
                         <label class="label">Display name</label>
                         <div class="control has-icons-left has-icons-right">
-                            <input class="input" type="text" placeholder="Enter display name" name="displayName">
+                            <input class="input" style="width: 300px" type="text" placeholder="Enter display name" name="displayName">
                             <span class="icon is-small is-left">
                                 <i class="fas fa-user"></i>
                             </span>
@@ -34,7 +34,7 @@
                     <div class="field">
                         <label class="label">RP ID</label>
                         <div class="control has-icons-left has-icons-right">
-                            <input class="input" type="text" placeholder="Enter RP ID" name="rpId">
+                            <input class="input" style="width: 300px" type="text" placeholder="Enter RP ID" name="rpId">
                             <span class="icon is-small is-left">
                                 <i class="fas fa-user"></i>
                             </span>
@@ -50,6 +50,32 @@
                         </div>
                     </div>
                 </form>
+
+
+
+                <div class="field">
+                    <label class="label" for="makeCredentialOptionsResult">Make credential options result</label>
+                    <div class="control">
+                        <textarea rows="20" style="min-width:500px; max-width:100%; min-height:50px; height:100%; width:100%;" name="makeCredentialOptionsResult" id="makeCredentialOptionsResult">
+                        </textarea>
+                    </div>
+                </div>
+
+                <div class="field">
+                    <label class="label" for="authenticatorResult">Authenticator result</label>
+                    <div class="control">
+                        <textarea rows="20" style="min-width:500px; max-width:100%; min-height:50px; height:100%; width:100%;" name="authenticatorResult" id="authenticatorResult">
+                        </textarea>
+                    </div>
+                </div>
+
+                <div class="field">
+                    <label class="label" for="registrationResult">Make credential result</label>
+                    <div class="control">
+                        <textarea rows="20" style="min-width:500px; max-width:100%; min-height:50px; height:100%; width:100%;" name="registrationResult" id="registrationResult">
+                        </textarea>
+                    </div>
+                </div>
             </div>
         </div>
 

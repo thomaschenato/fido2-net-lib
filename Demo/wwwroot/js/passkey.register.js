@@ -64,6 +64,9 @@ async function handleRegisterSubmit(event) {
 
     console.log("Credential Options Formatted", makeCredentialOptions);
 
+    let makeCredentialOptionsResult = document.querySelector('#makeCredentialOptionsResult');
+    makeCredentialOptionsResult.innerHTML = JSON.stringify(makeCredentialOptions, null, "\t");
+
     Swal.fire({
         title: 'Registering...',
         text: 'Tap your security key to finish registration.',
@@ -88,6 +91,10 @@ async function handleRegisterSubmit(event) {
         showErrorAlert(msg, e);
     }
 
+    console.log("PublicKeyCredential Created", newCredential);
+
+    let authenticatorResult = document.querySelector('#authenticatorResult');
+    authenticatorResult.innerHTML = JSON.stringify(newCredential, null, "\t");
 
     console.log("PublicKeyCredential Created", newCredential);
 
@@ -96,6 +103,8 @@ async function handleRegisterSubmit(event) {
     } catch (err) {
         showErrorAlert(err.message ? err.message : err);
     }
+
+    return;
 }
 
 async function fetchMakeCredentialOptions(formData) {
@@ -141,6 +150,9 @@ async function registerNewCredential(newCredential, username) {
 
     console.log("Credential Object", response);
 
+    let registrationResult = document.querySelector('#registrationResult');
+    registrationResult.innerHTML = JSON.stringify(response, null, "\t");
+
     // show error
     if (response.status === "error") {
         console.log("Error creating credential");
@@ -156,6 +168,8 @@ async function registerNewCredential(newCredential, username) {
         type: 'success',
         timer: 2000
     });
+
+    console.log("Create credential response: " + response);
 
     // redirect to dashboard?
     //window.location.href = "/dashboard/" + state.user.displayName;
