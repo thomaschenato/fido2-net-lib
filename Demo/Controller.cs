@@ -1,7 +1,10 @@
-﻿using System.Formats.Cbor;
+﻿using System.Collections;
+using System.Formats.Cbor;
+using System.Reflection;
 using System.Security.Cryptography;
 using System.Text;
-
+using System.Text.Json;
+using System.Text.Json.Serialization;
 using Fido2NetLib;
 using Fido2NetLib.Cbor;
 using Fido2NetLib.Development;
@@ -135,35 +138,14 @@ public class MyController : Controller
                 AttestationClientDataJson = credential.AttestationClientDataJson
             });
 
-            string attestationObject;
-            try
-            {
-                attestationObject = ((CborMap)CborObject.Decode(credential.AttestationObject)).ToJson();
-            }
-            catch (Exception e)
-            {
-                attestationObject = $"Could not decode {e.Message}";
-            }
+            var publicKey = GetCborDecodedObject(credential.PublicKey);
             
-            string publicKey;
-            try
-            {
-                publicKey = ((CborMap)CborObject.Decode(credential.PublicKey)).ToJson();
-            }
-            catch (Exception e)
-            {
-                publicKey = $"Could not decode {e.Message}";
-            }
+            var attestationClientDataJson = GetClientDataJson(credential.AttestationClientDataJson);
 
-            string clientDataJson;
-            try
-            {
-                clientDataJson = Encoding.Default.GetString(credential.AttestationClientDataJson).ToJson();
-            }
-            catch (Exception e)
-            {
-                clientDataJson = $"Could not decode {e.Message}";
-            }
+            var attestationObjectValues = GetCborDecodedObject(credential.AttestationObject);
+            var decodedAttestationObject = GetDecodedAttestationObject(attestationObjectValues.Single(x=>x.Key.Equals("authData")).Value);
+            attestationObjectValues.Add(new("decodedAuthData", decodedAttestationObject));
+            var attestationObject = new AttestationObject(attestationObjectValues);
             
             var response = new
             {
@@ -171,7 +153,7 @@ public class MyController : Controller
                 {
                     attestationObject,
                     publicKey,
-                    clientDataJson
+                    attestationClientDataJson
                 },
                 credential,
             };
@@ -252,7 +234,6 @@ public class MyController : Controller
                 return storedCreds.Exists(c => c.Descriptor.Id.SequenceEqual(args.CredentialId));
             };
 
-
             // 5. Make the assertion
             var res = await _fido2.MakeAssertionAsync(new MakeAssertionParams
             {
@@ -269,33 +250,16 @@ public class MyController : Controller
             var users = await DemoStorage.GetUsersByCredentialIdAsync(res.CredentialId, new CancellationToken());
             var userName = users.First().Name;
 
-            string authenticatorData;
-            
-            try
-            {
-                authenticatorData = CborObject.Decode(clientResponse.Response.AuthenticatorData).ToJson();
-            }
-            catch (Exception e)
-            {
-                authenticatorData = $"Could not decode {e.Message}";
-            }
-
-            string clientDataJson;
-            
-            try
-            {
-                clientDataJson = Encoding.Default.GetString(clientResponse.Response.ClientDataJson);
-            }
-            catch (Exception e)
-            {
-                clientDataJson = $"Could not decode {e.Message}";
-            }
+            var authenticatorData = GetCborItemValue(CborObject.Decode(clientResponse.Response.AuthenticatorData));
+            var clientDataJson = GetClientDataJson(clientResponse.Response.ClientDataJson);
+            var userHandle = clientResponse.Response.UserHandle;
             
             var response = new
             {
                 userName,
                 authenticatorData,
                 clientDataJson,
+                userHandle,
                 response = res,
             };
             
@@ -307,4 +271,199 @@ public class MyController : Controller
             return Json(new { Status = "error", ErrorMessage = FormatException(e) });
         }
     }
+    
+    private object GetDecodedAttestationObject(object authData)
+    {
+        var span = (authData as byte[]).AsSpan();
+        
+        var rpIdHash = span.Slice(0, 32); 
+        span = span.Slice(32);
+        
+        var flags = new BitArray(span.Slice(0, 1).ToArray()); 
+        span = span.Slice(1);
+
+        var counterBuf = span.Slice(0, 4); 
+        span = span.Slice(4);
+        
+        var counter = BitConverter.ToUInt32(counterBuf);
+        
+        // cred data - AAGUID (16 bytes)
+        var aaguid = span.Slice(0, 16); 
+        span = span.Slice(16);
+        
+        // cred data - L (2 bytes, big-endian uint16)
+        var credIdLenBuf = span.Slice(0, 2); 
+        span = span.Slice(2);
+        credIdLenBuf.Reverse();
+        var credentialIdLength = BitConverter.ToUInt16(credIdLenBuf);
+
+        // cred data - Credential ID (L bytes)
+        var credentialId = span.Slice(0, credentialIdLength);
+        span = span.Slice(credentialIdLength);
+
+        var coseStruct = CborObject.Decode(span.ToArray());
+        var keyValues = GetCborValues(((CborMap)coseStruct).ToList());
+        var key = new CredPublicKey(keyValues);        
+        
+        return new
+        {
+            rpIdHash = rpIdHash.ToArray(),
+            flags = new
+            {
+                userPresent = flags[0],
+                userVerified = flags[2],
+                attestedCredentialData = flags[6],
+                extensionDataIncluded = flags[7],
+            },
+            counter,
+            credentialId = credentialId.ToArray(),
+            aaguid = Guid.Parse(BitConverter.ToString(aaguid.ToArray()).Replace("-", string.Empty)),
+            key
+        };
+    }
+
+    private object GetClientDataJson(byte[] credentialAttestationClientDataJson)
+    {
+        try
+        {
+            return Encoding.Default.GetString(credentialAttestationClientDataJson).FromJson<ClientDataJson>();
+        }
+        catch (Exception e)
+        {
+            return $"Could not decode {e.Message}";
+        }
+    }
+
+    private List<KeyValuePair<string, object>> GetCborDecodedObject(byte[] data)
+    {
+        List<KeyValuePair<string, object>> decodedItems = new List<KeyValuePair<string, object>>();
+        
+        try
+        {
+            var items = ((CborMap)CborObject.Decode(data)).ToList();
+            decodedItems = GetCborValues(items);
+        }
+        catch (Exception e)
+        {
+            decodedItems.Add(new("Exception", $"Could not decode: {e.Message}"));
+        }
+        
+        return decodedItems;
+    }
+
+    private List<KeyValuePair<string, object>> GetCborValues(List<KeyValuePair<CborObject, CborObject>> items)
+    {
+        List<KeyValuePair<string, object>> decodedItems = new List<KeyValuePair<string, object>>();
+
+        foreach (var item in items)
+        {
+            string itemKey = null;
+            object itemValue = GetCborItemValue(item.Value);
+
+            if (item.Key as CborTextString != null)
+                itemKey = ((CborTextString)item.Key).Value;
+            else if (item.Key as CborInteger != null)
+                itemKey = ((CborInteger)item.Key).Value.ToString();
+
+            decodedItems.Add(new(itemKey, itemValue));
+        }
+
+        return decodedItems;
+    }
+
+    private object GetCborItemValue(CborObject itemValue)
+    {
+        if (itemValue as CborInteger != null)
+            return ((CborInteger)itemValue).Value;
+        
+        if (itemValue as CborTextString != null)
+            return ((CborTextString)itemValue).Value;
+        
+        if (itemValue as CborByteString != null)
+            return ((CborByteString)itemValue).Value;
+
+        return itemValue;
+    }
+
+    private string GetBase64DecodedString(byte[] data)
+    {
+        try
+        {
+            return Encoding.Default.GetString(data);
+        }
+        catch (Exception e)
+        {
+            return $"Could not decode {e.Message}";
+        }
+    }
+}
+
+public class ClientDataJson
+{
+    public string Type { get; set; }
+
+    public string Challenge { get; set; }
+
+    public string Origin { get; set; }
+
+    public string CrossOrigin { get; set; }
+}
+
+public class CredPublicKey
+{ 
+    public CredPublicKey(List<KeyValuePair<string, object>> publicKeyValues) // Use of Reflection here
+    {
+        foreach (var prop in typeof(CredPublicKey).GetProperties())
+        {
+            var propName = (prop.GetCustomAttributes(typeof(JsonPropertyAttribute)).First() as JsonPropertyAttribute)?.PropertyName;
+
+            var value = publicKeyValues.FirstOrDefault(x => x.Key.Equals(propName)).Value;
+            
+            prop.SetValue(this, value, null);
+        }
+    }
+    
+    [JsonProperty("1")]
+    public object KeyType { get; set; }
+
+    [JsonProperty("3")]
+    public object Algorithm { get; set; }
+
+    [JsonProperty("-1")]
+    public object Curve { get; set; }
+
+    [JsonProperty("-2")]
+    public object X { get; set; }
+
+    [JsonProperty("-3")]
+    public object Y { get; set; }
+}
+
+public class AttestationObject
+{ 
+    public AttestationObject(List<KeyValuePair<string, object>> attestationObjectValues) // Use of Reflection here
+    {
+        foreach (var prop in typeof(AttestationObject).GetProperties())
+        {
+            var propName = (prop.GetCustomAttributes(typeof(JsonPropertyAttribute)).First() as JsonPropertyAttribute)?.PropertyName;
+
+            var value = attestationObjectValues.FirstOrDefault(x => x.Key.Equals(propName)).Value;
+            
+            prop.SetValue(this, value, null);
+        }
+    }
+    
+    //Format
+    [JsonProperty("fmt")]
+    public object Fmt { get; set; }
+
+    //AttestationObject
+    [JsonProperty("attStmt")]
+    public object AttStmt { get; set; }
+
+    [JsonProperty("authData")]
+    public object AuthData { get; set; }
+
+    [JsonProperty("decodedAuthData")]
+    public object DecodedAuthData { get; set; }
 }

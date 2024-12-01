@@ -31,6 +31,7 @@ async function handleRegisterSubmit(event) {
 
     // send to server for registering
     let makeCredentialOptions;
+    
     try {
         makeCredentialOptions = await fetchMakeCredentialOptions(data);
 
@@ -64,8 +65,24 @@ async function handleRegisterSubmit(event) {
 
     console.log("Credential Options Formatted", makeCredentialOptions);
 
+    let decodedOptionsString  = `{
+        "decodedChallenge": "CHALLENGE",
+        "decodedId": "ID"
+        }`;
+
+    decodedOptionsString = decodedOptionsString
+        .replace("CHALLENGE", btoa(makeCredentialOptions.challenge))
+        .replace("ID", btoa(makeCredentialOptions.id));
+    
+    let decodedOptions = JSON.parse(decodedOptionsString);
+
+    const mergedObject = {
+        ...decodedOptions,
+        ...makeCredentialOptions
+    };
+    
     let makeCredentialOptionsResult = document.querySelector('#makeCredentialOptionsResult');
-    makeCredentialOptionsResult.innerHTML = JSON.stringify(makeCredentialOptions, null, "\t");
+    makeCredentialOptionsResult.innerHTML = JSON.stringify(mergedObject, null, "\t");
 
     Swal.fire({
         title: 'Registering...',
@@ -76,7 +93,6 @@ async function handleRegisterSubmit(event) {
         focusConfirm: false,
         focusCancel: false
     });
-
 
     console.log("Creating PublicKeyCredential...");
 
@@ -150,6 +166,13 @@ async function registerNewCredential(newCredential, username) {
 
     console.log("Credential Object", response);
 
+    var publicKey = {};
+    response.decodedCredential.publicKey.forEach(function(e){
+        publicKey[e.key] = e.value
+    })
+    
+    response.decodedCredential.publicKey = publicKey;
+    
     let registrationResult = document.querySelector('#registrationResult');
     registrationResult.innerHTML = JSON.stringify(response, null, "\t");
 
