@@ -1,5 +1,6 @@
 ﻿using System.Collections;
 using System.Formats.Cbor;
+using System.Net.Mime;
 using System.Reflection;
 using System.Security.Cryptography;
 using System.Text;
@@ -267,9 +268,10 @@ public class MyController : Controller
             var response = new
             {
                 userName,
-                authenticatorData,
+                decodedAuthData = authenticatorData,
                 clientDataJson,
                 userHandle,
+                clientResponse.Response.AuthenticatorData,
                 response = res,
             };
             
