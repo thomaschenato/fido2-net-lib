@@ -259,7 +259,14 @@ public class MyController : Controller
             }
             catch (Exception e)
             {
-                authenticatorData = $"Could not decode: {e}";
+                try
+                {
+                    authenticatorData = GetCborItemValue(CborObject.Decode(clientResponse.Response.AuthenticatorData.AsSpan(2).ToArray()));
+                }
+                catch (Exception)
+                {
+                    authenticatorData = $"Could not decode: {e}";
+                }
             }
             
             var clientDataJson = GetClientDataJson(clientResponse.Response.ClientDataJson);
