@@ -250,28 +250,23 @@ public class MyController : Controller
 
             var users = await DemoStorage.GetUsersByCredentialIdAsync(res.CredentialId, new CancellationToken());
             var userName = users.First().Name;
-
-            object authenticatorData;
-
-            try
-            {
-                authenticatorData = GetCborItemValue(CborObject.Decode(clientResponse.Response.AuthenticatorData));
-            }
-            catch (Exception e)
-            {
-                authenticatorData = $"Could not decode: {e}";
-            }
+            
+            var authenticatorData = GetDecodedAuthenticatorData(clientResponse.Response.AuthenticatorData);
             
             var clientDataJson = GetClientDataJson(clientResponse.Response.ClientDataJson);
             var userHandle = clientResponse.Response.UserHandle;
             
             var response = new
             {
-                userName,
-                decodedAuthData = authenticatorData,
-                clientDataJson,
-                userHandle,
-                clientResponse.Response.AuthenticatorData,
+                request = new {
+                    userName,
+                    clientResponse.Response.AuthenticatorData,
+                    decodedAuthData = authenticatorData,
+                    clientResponse.Response.Signature,
+                    clientDataJson,
+                    userHandle,
+                    clientResponse.ClientExtensionResults
+                },
                 response = res,
             };
             
@@ -283,7 +278,48 @@ public class MyController : Controller
             return Json(new { Status = "error", ErrorMessage = FormatException(e) });
         }
     }
-    
+
+    private object GetDecodedAuthenticatorData(byte[] authenticatorData)
+    {
+        try
+        {
+           var span = authenticatorData.AsSpan();
+
+            // RP ID Hash (32 bytes)
+            var rpIdHash = span.Slice(0, 32);
+            span = span.Slice(32);
+
+            // Flags (1 byte)
+            var flagsBuf = span.Slice(0, 1).ToArray();
+            var flags = new BitArray(flagsBuf);
+            span = span.Slice(1);
+            var userPresent = flags[0]; // (UP)
+
+            // Bit 1 reserved for future use (RFU1)
+            var userVerified = flags[2]; // (UV)
+
+            // Bits 3-5 reserved for future use (RFU2)
+            var attestedCredentialData = flags[6]; // (AT)
+            var extensionDataIncluded = flags[7]; // (ED)
+
+            // Signature counter
+            var counterBuf = span.Slice(0, 4);
+            span = span.Slice(4);
+            var counter = BitConverter.ToUInt32(counterBuf);
+
+            return new
+            {
+                rpIdHash = rpIdHash.ToArray(),
+                flags = new { userVerified, userPresent, attestedCredentialData, extensionDataIncluded },
+                counter
+            };
+        }
+        catch (Exception e)
+        {
+            return $"Could not decode: {e}";
+        }
+    }
+
     private object GetDecodedAttestationObject(object authData)
     {
         var span = (authData as byte[]).AsSpan();
@@ -395,18 +431,6 @@ public class MyController : Controller
             return ((CborByteString)itemValue).Value;
 
         return itemValue;
-    }
-
-    private string GetBase64DecodedString(byte[] data)
-    {
-        try
-        {
-            return Encoding.Default.GetString(data);
-        }
-        catch (Exception e)
-        {
-            return $"Could not decode {e.Message}";
-        }
     }
 }
 
