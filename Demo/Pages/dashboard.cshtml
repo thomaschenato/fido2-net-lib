@@ -1,5 +1,5 @@
 ﻿@page "/dashboard/{username}"
-@model Fido2Demo.Pages.dashboardModel
+@model Fido2Demo.Pages.DashboardModel
 @{
     ViewData["Title"] = "dashboard";
     Layout = "_Layout.cshtml";
@@ -15,9 +15,6 @@
 
     // 2. Get registered credentials from database
     var existingCredentials = DemoStorage.GetCredentialsByUser(user);
-
-
-
 }
 
 <div class="section">

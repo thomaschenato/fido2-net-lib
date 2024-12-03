@@ -1,0 +1,27 @@
+﻿@page "/registeredUsers"
+@model Fido2Demo.Pages.RegisteredUsersModel
+@{
+    Layout = "_Layout.cshtml";
+}
+
+<div class="section">
+    <div class="container">
+        <h3 class="title">Registered users</h3>
+
+        <button id="btnGetUsers" class="button is-link">Get registered users</button>
+        <table class="table" id="tblUsers">
+            <thead>
+            <tr>
+                <td>Id</td>
+                <td>User Name</td>
+                <td>Display Name</td>
+                <td>Credential count</td>
+                <td></td>
+            </tr>
+            </thead>
+        </table>
+
+    </div>
+</div>
+
+<script src="~/js/passkey.users.js"></script>
