@@ -1,0 +1,30 @@
+﻿@page "/registeredPasskeys"
+@model Fido2Demo.Pages.RegisteredPasskeysModel
+@{
+    Layout = "_Layout.cshtml";
+}
+
+<div class="section">
+    <div class="container">
+        <h3 class="title">Registered passkeys</h3>
+
+        <button id="btnGetCredentials" class="button is-link">Get registered passkeys</button>
+        <table class="table" id="tblCredentials">
+            <thead>
+            <tr>
+                <td>Date</td>
+                <td>UserId</td>
+                <td>UserHandle</td>
+                <td>Counter</td>
+                <td>AAGuid</td>
+                <td>Attestation Type</td>
+                <td>Public Key</td>
+                <td></td>
+            </tr>
+            </thead>
+        </table>
+
+    </div>
+</div>
+
+<script src="~/js/passkey.list.js"></script>
