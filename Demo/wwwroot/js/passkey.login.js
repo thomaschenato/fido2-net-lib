@@ -96,7 +96,8 @@ async function verifyAssertionWithServer(assertedCredential) {
         response: {
             authenticatorData: coerceToBase64Url(authData),
             clientDataJSON: coerceToBase64Url(clientDataJSON),
-            signature: coerceToBase64Url(sig)
+            signature: coerceToBase64Url(sig),
+            userHandle: coerceToBase64Url(assertedCredential.response.userHandle),
         }
     };
 
@@ -139,7 +140,4 @@ async function verifyAssertionWithServer(assertedCredential) {
         type: 'success',
         timer: 2000
     });
-
-    // redirect to dashboard to show keys
-    //window.location.href = "/dashboard/" + userName;
 }
