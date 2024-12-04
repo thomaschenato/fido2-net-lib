@@ -42,14 +42,12 @@ function addUserRow(user) {
     row.id = user.id;
     
     // Create table cells
-    let userIdCell = row.insertCell(0);
-    let userNameCell = row.insertCell(1);
-    let displayNameCell = row.insertCell(2);
-    let counterCell = row.insertCell(3);
-    let actionCell = row.insertCell(4);
+    let userNameCell = row.insertCell(0);
+    let displayNameCell = row.insertCell(1);
+    let counterCell = row.insertCell(2);
+    let actionCell = row.insertCell(3);
 
     // Add data to cells
-    userIdCell.innerText = user.id;
     userNameCell.innerText = user.name;
     displayNameCell.innerText = user.displayName;
     counterCell.innerText = user.credentialCount;

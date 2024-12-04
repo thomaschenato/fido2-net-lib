@@ -98,5 +98,4 @@ async function deleteCredential(credentialId)
         type: 'success',
         timer: 2000
     });
-    return;
 }
