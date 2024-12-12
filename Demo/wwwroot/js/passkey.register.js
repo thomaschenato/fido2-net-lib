@@ -17,8 +17,21 @@ async function handleRegisterSubmit(event) {
 
     // possible values: true,false
     let residentKey = value("#option-residentkey");
+    
+    let applyExclusions = document.getElementById("applyExclusions").checked;
+    let userAgentHints = document.getElementsByName("userAgentHints");
+    let selectedUserAgentHints = "";
 
+    for (let i = 0; i < userAgentHints.length; i++) {
+        if(userAgentHints[i].checked) {
+            if(selectedUserAgentHints !== "") {
+                selectedUserAgentHints = selectedUserAgentHints + ",";
+            }
 
+            selectedUserAgentHints = selectedUserAgentHints + userAgentHints[i].id;
+        }
+    }
+    
     // prepare form post data
     var data = new FormData();
     data.append('username', username);
@@ -28,7 +41,9 @@ async function handleRegisterSubmit(event) {
     data.append('authType', authenticator_attachment);
     data.append('userVerification', user_verification);
     data.append('residentKey', residentKey);
-
+    data.append('applyExclusions', applyExclusions);
+    data.append('userAgentHints', selectedUserAgentHints);
+    
     // send to server for registering
     let makeCredentialOptions;
     
@@ -55,13 +70,14 @@ async function handleRegisterSubmit(event) {
     makeCredentialOptions.challenge = coerceToArrayBuffer(makeCredentialOptions.challenge);
     // Turn ID into a UInt8Array Buffer for some reason
     makeCredentialOptions.user.id = coerceToArrayBuffer(makeCredentialOptions.user.id);
-
+    
     makeCredentialOptions.excludeCredentials = makeCredentialOptions.excludeCredentials.map((c) => {
         c.id = coerceToArrayBuffer(c.id);
         return c;
     });
 
-    if (makeCredentialOptions.authenticatorSelection.authenticatorAttachment === null) makeCredentialOptions.authenticatorSelection.authenticatorAttachment = undefined;
+    if (makeCredentialOptions.authenticatorSelection.authenticatorAttachment === null) 
+        makeCredentialOptions.authenticatorSelection.authenticatorAttachment = undefined;
 
     console.log("Credential Options Formatted", makeCredentialOptions);
 
