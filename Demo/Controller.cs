@@ -31,11 +31,12 @@ public class MyController : Controller
                                             [FromForm] string attType,
                                             [FromForm] string authType,
                                             [FromForm] string residentKey,
-                                            [FromForm] string userVerification)
+                                            [FromForm] string userVerification,
+                                            [FromForm] bool applyExclusions,
+                                            [FromForm] string userAgentHints)
     {
         try
         {
-
             if (string.IsNullOrEmpty(username))
             {
                 username = $"{displayName} (Usernameless user created at {DateTime.UtcNow})";
@@ -50,8 +51,20 @@ public class MyController : Controller
             });
 
             // 2. Get user existing keys by username
-            var existingKeys = DemoStorage.GetCredentialsByUser(user).Select(c => c.Descriptor).ToList();
+            List<PublicKeyCredentialDescriptor> existingKeys;
 
+            if (applyExclusions)
+                existingKeys = DemoStorage.GetCredentialsByUser(user).Select(c => c.Descriptor).ToList();
+            else
+                existingKeys = new List<PublicKeyCredentialDescriptor>();
+
+            List<PublicKeyCredentialHint> credentialHints;
+
+            if (string.IsNullOrWhiteSpace(userAgentHints))
+                credentialHints = new List<PublicKeyCredentialHint>();    
+            else
+                credentialHints = userAgentHints.Split(',').Select(x => x.ToEnum<PublicKeyCredentialHint>()).ToList();
+            
             // 3. Create options
             var authenticatorSelection = new AuthenticatorSelection
             {
@@ -66,10 +79,10 @@ public class MyController : Controller
             {
                 Extensions = true,
                 UserVerificationMethod = true,
-                CredProps = true
+                CredProps = true,
             };
 
-            var options = _fido2.RequestNewCredential(user, rpId, existingKeys, authenticatorSelection, attType.ToEnum<AttestationConveyancePreference>(), exts);
+            var options = _fido2.RequestNewCredential(user, rpId, existingKeys, authenticatorSelection, attType.ToEnum<AttestationConveyancePreference>(), credentialHints, exts);
 
             // 4. Temporarily store options, session/in-memory cache/redis/db
             HttpContext.Session.SetString("fido2.attestationOptions", options.ToJson());
@@ -160,7 +173,11 @@ public class MyController : Controller
 
     [HttpPost]
     [Route("/assertionOptions")]
-    public ActionResult AssertionOptionsPost([FromForm] string username, [FromForm] string rpId, [FromForm] string userVerification)
+    public ActionResult AssertionOptionsPost(
+        [FromForm] string username, 
+        [FromForm] string rpId, 
+        [FromForm] string userVerification, 
+        [FromForm] string userAgentHints)
     {
         try
         {
@@ -178,15 +195,24 @@ public class MyController : Controller
             var exts = new AuthenticationExtensionsClientInputs()
             {
                 Extensions = true,
-                UserVerificationMethod = true
+                UserVerificationMethod = true,
             };
-
+            
             // 3. Create options
             var uv = string.IsNullOrEmpty(userVerification) ? UserVerificationRequirement.Discouraged : userVerification.ToEnum<UserVerificationRequirement>();
+            
+            List<PublicKeyCredentialHint> credentialHints;
+
+            if (string.IsNullOrWhiteSpace(userAgentHints))
+                credentialHints = new List<PublicKeyCredentialHint>();    
+            else
+                credentialHints = userAgentHints.Split(',').Select(x => x.ToEnum<PublicKeyCredentialHint>()).ToList();
+
             var options = _fido2.GetAssertionOptions(
                 existingCredentials,
                 uv,
                 rpId,
+                credentialHints,
                 exts
             );
 
