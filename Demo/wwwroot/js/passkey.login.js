@@ -6,25 +6,12 @@ async function handleSignInSubmit(event) {
     let username = this.username.value;
     let rpId = this.rpId.value;
     let user_verification = value("#option-userverification");
-    let userAgentHints = document.getElementsByName("userAgentHints");
-    let selectedUserAgentHints = "";
-    
-    for (let i = 0; i < userAgentHints.length; i++) {
-        if(userAgentHints[i].checked) {
-            if(selectedUserAgentHints !== "") {
-                selectedUserAgentHints = selectedUserAgentHints + ",";
-            }
-            
-            selectedUserAgentHints = selectedUserAgentHints + userAgentHints[i].id;    
-        }
-    }
 
     // prepare form post data
     var formData = new FormData();
     formData.append('username', username);
     formData.append('rpId', rpId);
     formData.append('userVerification', user_verification);
-    formData.append('userAgentHints', selectedUserAgentHints);
 
     // send to server for registering
     let makeAssertionOptions;

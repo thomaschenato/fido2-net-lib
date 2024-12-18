@@ -123,7 +123,6 @@ public sealed class CredentialCreateOptions
         AuthenticatorSelection authenticatorSelection,
         AttestationConveyancePreference attestationConveyancePreference,
         IReadOnlyList<PublicKeyCredentialDescriptor> excludeCredentials,
-        IReadOnlyList<PublicKeyCredentialHint> hints,
         AuthenticationExtensionsClientInputs extensions)
     {
         var rp = rpId ?? config.ServerDomain;
@@ -134,7 +133,6 @@ public sealed class CredentialCreateOptions
             Rp = new PublicKeyCredentialRpEntity(rp, config.ServerName, config.ServerIcon),
             Timeout = config.Timeout,
             User = user,
-            Hints = hints,
             PubKeyCredParams =
             [
                 // Add additional as appropriate
