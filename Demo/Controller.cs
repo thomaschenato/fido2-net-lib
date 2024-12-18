@@ -32,8 +32,8 @@ public class MyController : Controller
                                             [FromForm] string authType,
                                             [FromForm] string residentKey,
                                             [FromForm] string userVerification,
-                                            [FromForm] bool applyExclusions = true,
-                                            [FromForm] string userAgentHints = null)
+                                            [FromForm] bool applyExclusions,
+                                            [FromForm] string userAgentHints)
     {
         try
         {
@@ -177,7 +177,7 @@ public class MyController : Controller
         [FromForm] string username, 
         [FromForm] string rpId, 
         [FromForm] string userVerification, 
-        [FromForm] string userAgentHints = null)
+        [FromForm] string userAgentHints)
     {
         try
         {
