@@ -68,8 +68,7 @@ public class AssertionOptions
         byte[] challenge,
         IReadOnlyList<PublicKeyCredentialDescriptor> allowedCredentials,
         UserVerificationRequirement? userVerification,
-        AuthenticationExtensionsClientInputs? extensions,
-        IReadOnlyList<PublicKeyCredentialHint> credentialHint)
+        AuthenticationExtensionsClientInputs? extensions)
     {
         string rp = rpId ?? config.ServerDomain;
 
@@ -80,8 +79,7 @@ public class AssertionOptions
             RpId = rp,
             AllowCredentials = allowedCredentials,
             UserVerification = userVerification,
-            Extensions = extensions,
-            Hints = credentialHint,
+            Extensions = extensions
         };
     }
 

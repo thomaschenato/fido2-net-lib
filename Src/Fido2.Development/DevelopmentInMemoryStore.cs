@@ -28,19 +28,6 @@ public class DevelopmentInMemoryStore
         return _storedCredentials.FirstOrDefault(c => c.Descriptor.Id.AsSpan().SequenceEqual(id));
     }
 
-    public StoredCredential? GetCredentialById(Guid id)
-    {
-        return _storedCredentials.FirstOrDefault(c => c.CredentialId.Equals(id));
-    }
-
-    public void DeleteCredentialById(Guid id)
-    {
-        var credential = GetCredentialById(id);
-        
-        if(credential != null) 
-            _storedCredentials.Remove(credential);
-    }
-    
     public Task<List<StoredCredential>> GetCredentialsByUserHandleAsync(byte[] userHandle, CancellationToken cancellationToken = default)
     {
         return Task.FromResult(_storedCredentials.Where(c => c.UserHandle.AsSpan().SequenceEqual(userHandle)).ToList());
@@ -67,24 +54,5 @@ public class DevelopmentInMemoryStore
             return Task.FromResult(new List<Fido2User>());
 
         return Task.FromResult(_storedUsers.Where(u => u.Value.Id.SequenceEqual(cred.UserId)).Select(u => u.Value).ToList());
-    }
-
-    public Task<List<object>> GetAllUsers(CancellationToken cancellationToken = default)
-    {
-        List<object> users = new List<object>();
-
-        foreach (var user in _storedUsers)
-        {
-            var credentialCount = GetCredentialsByUser(user.Value).Count;
-            
-            users.Add(new { user.Value.Id, user.Value.Name, user.Value.DisplayName, credentialCount });
-        }
-        
-        return Task.FromResult(users);
-    }
-
-    public Task<List<StoredCredential>> GetAllCredentials(CancellationToken cancellationToken = default)
-    {
-        return Task.FromResult(_storedCredentials);
     }
 }
