@@ -244,7 +244,7 @@ public class MyController : Controller
             var authenticatorData = Decoder.GetDecodedAuthenticatorData(clientResponse.Response.AuthenticatorData);
             
             var clientDataJson = Decoder.GetClientDataJson(clientResponse.Response.ClientDataJson);
-            var userHandle = ASCIIEncoding.ASCII.GetString(clientResponse.Response.UserHandle);
+            var userHandle = clientResponse.Response.UserHandle;
             
             var response = new
             {
