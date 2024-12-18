@@ -11,43 +11,41 @@
 
                 <h3 class="title">Sign in</h3>
                 <form action="/mfa" method="post" id="signin">
-                    <div class="columns">
-                        <div class="column is-4">
-                            <div class="field">
-                                <label class="label">Username</label>
-                                <div class="control has-icons-left has-icons-right">
-                                    <input class="input" style="width: 300px" type="text" placeholder="Enter username" name="username" id="login-username">
-                                    <span class="icon is-small is-left">
-                                        <i class="fas fa-user"></i>
-                                    </span>
-                                </div>
-                            </div>
-                            <div class="field">
-                            <label class="label">RP ID</label>
-                            <div class="control has-icons-left has-icons-right">
-                                <input class="input" style="width: 300px" type="text" placeholder="Enter RP ID" name="rpId">
-                                <span class="icon is-small is-left">
-                                    <i class="fas fa-user"></i>
-                                </span>
-                            </div>
+                    <div class="field">
+                        <label class="label">Username</label>
+                        <div class="control has-icons-left has-icons-right">
+                            <input class="input" style="width: 300px" type="text" placeholder="Enter username" name="username" id="login-username">
+                            <span class="icon is-small is-left">
+                                <i class="fas fa-user"></i>
+                            </span>
                         </div>
-                            <div class="field">
-                                <label class="label">User verification</label>
-                                <div class="control">
-                                    <div class="select" style="width: 300px">
-                                        <select id="option-userverification" style="width: 300px">
-                                            <option value="required">Required</option>
-                                            <option selected value="preferred">Preferred</option>
-                                            <option value="discouraged">Discouraged</option>
-                                        </select>
-                                    </div>
-                                </div>
+                    </div>
 
+                    <div class="field">
+                        <label class="label">RP ID</label>
+                        <div class="control has-icons-left has-icons-right">
+                            <input class="input" style="width: 300px" type="text" placeholder="Enter RP ID" name="rpId">
+                            <span class="icon is-small is-left">
+                                <i class="fas fa-user"></i>
+                            </span>
+                        </div>
+                    </div>
+
+                    <div class="field">
+                        <label class="label">User verification</label>
+                        <div class="control">
+                            <div class="select" style="width: 300px">
+                                <select id="option-userverification" style="width: 300px">
+                                    <option value="required">Required</option>
+                                    <option selected value="preferred">Preferred</option>
+                                    <option value="discouraged">Discouraged</option>
+                                </select>
                             </div>
                         </div>
 
-                        <div class="column is-4">
-                            <div class="field">
+                    </div>
+
+                    <div class="field">
                         <fieldset>
                             <legend>User-agent hints</legend>
                             <div class="control has-icons-left has-icons-right">
@@ -60,8 +58,7 @@
                             </div>
                         </fieldset>
                     </div>
-                        </div>
-                    </div>
+
                     <div class="field">
                         <div class="control">
                             <button class="button is-link">Sign in</button>

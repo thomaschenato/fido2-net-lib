@@ -980,7 +980,7 @@ public class Fido2Tests
         var cred = new PublicKeyCredentialDescriptor([0xf1, 0xd0]);
         existingCredentials.Add(cred);
 
-        var options = lib.GetAssertionOptions(existingCredentials, null, null, Array.Empty<PublicKeyCredentialHint>());
+        var options = lib.GetAssertionOptions(existingCredentials, null, null);
         options.Challenge = challenge;
         var response = new AuthenticatorAssertionRawResponse()
         {
