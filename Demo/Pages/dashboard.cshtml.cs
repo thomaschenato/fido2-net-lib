@@ -2,7 +2,7 @@
 
 namespace Fido2Demo.Pages
 {
-    public class DashboardModel : PageModel
+    public class dashboardModel : PageModel
     {
         public void OnGet(string username)
         {
